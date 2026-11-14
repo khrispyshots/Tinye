@@ -353,9 +353,22 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
         </div>
 
         {localNotice && (
-          <div role="alert" className="p-3.5 rounded-[14px] bg-amber-50/90 border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-1">
-            <p className="font-semibold text-amber-950">Hosted Relayer Required</p>
+          <div role="alert" className="p-3.5 rounded-[14px] bg-amber-50/90 border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-amber-950">Notice</p>
+              <button type="button" onClick={() => setLocalNotice('')} className="text-amber-700 hover:text-amber-950 text-xs font-bold px-1">✕</button>
+            </div>
             <p>{localNotice}</p>
+            <div className="pt-1">
+              <a
+                href="https://testnet.mynearwallet.com"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-[#507222] hover:underline"
+              >
+                Create a free testnet wallet at MyNearWallet ↗
+              </a>
+            </div>
           </div>
         )}
 
@@ -371,6 +384,20 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
           <span>{loading ? 'Verifying wallet…' : selectedWallet === 'embedded' ? 'Create wallet & continue' : 'Connect wallet & continue'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
+
+        <div className="text-center pt-1">
+          <p className="text-xs text-[#5F6368]">
+            Need a testnet wallet?{' '}
+            <a
+              href="https://testnet.mynearwallet.com"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#507222] font-semibold hover:underline"
+            >
+              Create free at MyNearWallet ↗
+            </a>
+          </p>
+        </div>
         {selectedWallet === 'embedded' && localWalletRedirect && <p className="text-xs leading-relaxed text-[#507222]">Wallet setup continues in the local wallet-ready preview at localhost:3000.</p>}
         {selectedWallet === 'embedded' && <p className="text-[11px] leading-relaxed text-[#5F6368]">NEAR Auth opens a secure approval popup. Recovery depends on your login provider and NEAR Auth’s MPC service. Signing approvals are verified on-chain; use testnet tokens only.</p>}
         {error && <p role="alert" className="text-xs leading-relaxed text-red-700 break-words">{error}</p>}
