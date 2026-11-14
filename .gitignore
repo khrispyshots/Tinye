@@ -1,0 +1,36 @@
+# Actual environment configuration and secrets; retain safe templates.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# NEAR local credentials and signing material
+.near-credentials/
+credentials/
+*.pem
+*.key
+
+# Local dependencies, build outputs and coverage
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Rust build outputs
+target/
+
+.next-dev/
+.next-dev-recovery/
+
+.next-build/
+
+# Isolated Rust WASM build output
+target-wasm/
+
+# Local research and browser verification outputs
+.tmp-*/
+test-results/
+playwright-report/
+.vercel/
+*.log

@@ -1,0 +1,13 @@
+{
+  "contractAccountId": "savings.tinye.testnet",
+  "network": "testnet",
+  "deployed": true,
+  "ownerId": "tinye.testnet",
+  "treasuryId": "tinye.testnet",
+  "accountCreationTransactionHash": "5ff9ysiSsrX6M86NCigFfuqLMtS15fG8MHQF1dpH8C79",
+  "deploymentTransactionHash": "GZNbbokDStLEQF1pj8P6V5ZhJWQ7ok4PFPwiaXU82n7r",
+  "initializationTransactionHash": "7CDHZbMeSDUrCxN2X32CCuKiDYVSwX4g2PXFbkyk5heP",
+  "wasmHashSha256": "7CF6EFC22918C7C43C2B34D791A0344FED2CFA8F0BAF0229234402FBBC740B5A",
+  "wasmSizeBytes": 327281,
+  "verifiedAt": "2026-11-14T20:49:15Z"
+}

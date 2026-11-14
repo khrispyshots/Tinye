@@ -1,0 +1,43 @@
+{
+  "name": "tinye-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3010",
+    "dev:wallet": "node scripts/local-wallet-proxy.mjs",
+    "build": "next build",
+    "start": "next start",
+    "test": "tsx --test tests/amounts.test.ts",
+    "test:auth": "tsx --test tests/auth-http.test.ts",
+    "test:unit": "tsx --test tests/amounts.test.ts tests/embedded-payload.test.ts tests/database-validation.test.ts tests/savings-insights.test.ts",
+    "test:browser": "node scripts/browser-check.mjs",
+    "test:profile": "tsx --test tests/profile-http.test.ts"
+  },
+  "dependencies": {
+    "@auth0/auth0-spa-js": "2.2.0",
+    "@fast-auth-near/browser-sdk": "1.4.2",
+    "@hot-labs/near-connect": "0.12.0",
+    "@supabase/server": "1.9.2",
+    "@supabase/supabase-js": "2.95.3",
+    "jose": "6.1.0",
+    "lucide-react": "^0.469.0",
+    "near-api-js": "^7.2.0",
+    "near-api-legacy": "npm:near-api-js@5.1.1",
+    "next": "15.5.28",
+    "qrcode": "1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@types/node": "^20.17.10",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "tsx": "^4.23.15",
+    "typescript": "^5.6.3"
+  }
+}

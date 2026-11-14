@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-14",
+  "network": "testnet",
+  "deployment_status": "not_deployed",
+  "artifact": {
+    "path": "deployments/artifacts/tinye_vault.groups-v1.wasm",
+    "size_bytes": 382777,
+    "sha256": "9ED36015F72D674FA74E99BAD189CE5D8C017A1084E7CF08DDA2425A9DE7275A"
+  },
+  "build": {
+    "command": "cargo +stable-x86_64-pc-windows-gnu build --locked --target wasm32-unknown-unknown --release --target-dir target-wasm",
+    "working_directory": "contracts/tinye_vault",
+    "exit_code": 0,
+    "rust": "1.100.0",
+    "near_sdk": "5.30.2",
+    "jobs": 1
+  },
+  "validation": {
+    "wasm_header_and_required_exports": "passed",
+    "recognition_tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "rust_tests": {
+      "passed": 25,
+      "failed": 0,
+      "duration_seconds": 38.46,
+      "method": "Current source compiled with rustc --test against previously compiled, fingerprint-verified Cargo dependency artifacts; near-sdk 5.30.2 unit-testing/legacy and GNU rustc 1.100.0 verified.",
+      "compile_command": "rustc +stable-x86_64-pc-windows-gnu @contracts/tinye_vault/target/manual-group-tests.rsp",
+      "run_command": "contracts/tinye_vault/target/manual_group_tests.exe --test-threads=1"
+    },
+    "standard_cargo_test": "Not completed: cancelled while unchanged AWS-LC CMake dependency scanning remained slow. Do not describe the manual test run as cargo test passing.",
+    "creator_governance_regressions": "Passed: creator cannot leave an open group; leaving after closing invitations preserves individual savings."
+  },
+  "sources_sha256": {
+    "contracts/tinye_vault/src/lib.rs": "2E8EC95CD8F27F3CE8876EFB8F5B1928DD8455514E65522CBCE8CB03F994AAEE",
+    "contracts/tinye_vault/src/group.rs": "43926D7CD7C6DB286BFEB6EF99A2AFD91A85140EA101AAED79BE669B0D5FE09F",
+    "contracts/tinye_vault/Cargo.lock": "BB96B2A5DD9B3EBDB6C1CCD6DC258230F77B3E52190658833B446FEC2D72625C"
+  },
+  "upgrade": {
+    "top_level_borsh_layout_changed": false,
+    "goal_borsh_layout_changed": false,
+    "new_storage_prefix": "tinye:groups:v1:",
+    "initialise_again": false,
+    "testnet_state_verification_required": true,
+    "frontend_feature_flag": "NEXT_PUBLIC_TINYE_GROUPS_ENABLED must remain false until verified deployment."
+  }
+}

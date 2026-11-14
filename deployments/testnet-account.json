@@ -1,0 +1,12 @@
+{
+  "verificationBlockHash": "C9KGKN3EvgEpcQoqAMZvbuqJ1CZ7kZqsa6f4m3XiNENS",
+  "signingMethod": "sign-with-keychain",
+  "credentialStore": "Windows system keychain via near-cli-rs",
+  "creationTransactionHash": "HZVVYgC6y4oY5NDeq4A24ycCrrgFdKctYTLibwVSS1PG",
+  "deployerAccountId": "tinye.testnet",
+  "network": "testnet",
+  "verifiedBalanceYocto": "10000000000000000000000000",
+  "contractDeployed": false,
+  "publicKey": "ed25519:44y78yTM7cfAYfewHZCQ6YDWUyCfpzCmMqxt3s9p84Gf",
+  "verificationBlockHeight": 277675032
+}
