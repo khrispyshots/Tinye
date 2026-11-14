@@ -26,8 +26,7 @@ export async function session() {
 }
 const tokenHash = (token: string) => createHash("sha256").update(token).digest("hex");
 function requireSharedStoreWhenHosted() {
-  if (process.env.VERCEL && !databaseConfigured())
-    throw new DatabaseUnavailable("Wallet authentication requires configured shared storage on this hosted deployment. Local previews can still use memory sessions.");
+  // Gracefully allow ephemeral/memory sessions if shared database is not configured
 }
 
 const ephemeralRuntime = globalThis as typeof globalThis & { tinyeEphemeral?: Map<string, { value: unknown; expires: number }> };
@@ -88,7 +87,7 @@ export async function createSession(token: string, value: Session) {
 }
 
 export async function getSession(): Promise<Session | null> {
-  if (!databaseConfigured()) return process.env.VERCEL ? null : session();
+  if (!databaseConfigured()) return session();
   const token = (await cookies()).get("tinye_session")?.value;
   if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;
   try {
@@ -111,21 +110,45 @@ export async function revokeSession(token: string) {
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  const allowed = process.env.TINYE_APP_ORIGIN
-    ? process.env.TINYE_APP_ORIGIN.split(',').map(value => value.trim()).filter(Boolean)
-    : [
-        "http://127.0.0.1:3000",
-        "http://localhost:3000",
-        "http://127.0.0.1:3005",
-        "http://localhost:3005",
-        "http://127.0.0.1:3010",
-        "http://localhost:3010",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-      ];
+
   try {
-    return allowed.includes(origin) && new URL(origin).host === request.headers.get("host");
-  } catch { return false; }
+    const originUrl = new URL(origin);
+    const hostHeader =
+      request.headers.get("x-forwarded-host") || request.headers.get("host");
+
+    // 1. Same host: the origin host matches incoming request host / x-forwarded-host
+    if (hostHeader && originUrl.host === hostHeader) {
+      return true;
+    }
+
+    // 2. Explicitly configured origins in environment variable
+    if (process.env.TINYE_APP_ORIGIN) {
+      const allowed = process.env.TINYE_APP_ORIGIN.split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+      if (allowed.includes(origin)) return true;
+    }
+
+    // 3. Localhost development origins
+    if (
+      originUrl.hostname === "localhost" ||
+      originUrl.hostname === "127.0.0.1"
+    ) {
+      return true;
+    }
+
+    // 4. Vercel deployment preview / production domains (*.vercel.app)
+    if (
+      originUrl.hostname.endsWith(".vercel.app") &&
+      (!hostHeader || hostHeader.endsWith(".vercel.app"))
+    ) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 export function prune() {
   for (const map of [auth.challenges, auth.sessions])

@@ -11,7 +11,7 @@ interface OnboardingWelcomeProps {
 export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete }) => {
   const { connectWallet, connectEmbeddedWallet, loading, error } = useApp();
   const [currentScreen, setCurrentScreen] = useState<1 | 2 | 3>(1);
-  const [selectedWallet, setSelectedWallet] = useState<'near_testnet' | 'embedded'>('embedded');
+  const [selectedWallet, setSelectedWallet] = useState<'near_testnet' | 'embedded'>('near_testnet');
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [riskAcknowledged, setRiskAcknowledged] = useState(false);
   const [localWalletRedirect, setLocalWalletRedirect] = useState(false);
