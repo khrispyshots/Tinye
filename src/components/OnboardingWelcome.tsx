@@ -15,14 +15,24 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [riskAcknowledged, setRiskAcknowledged] = useState(false);
   const [localWalletRedirect, setLocalWalletRedirect] = useState(false);
+  const [localNotice, setLocalNotice] = useState('');
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('wallet') === 'create') setCurrentScreen(3);
     const sharedClient = !process.env.NEXT_PUBLIC_NEAR_AUTH_CLIENT_ID || process.env.NEXT_PUBLIC_NEAR_AUTH_CLIENT_ID === 'np8paqIpMWmNbzT4xAvOOapZBjsOpptl';
     setLocalWalletRedirect(sharedClient && ['http://127.0.0.1:3010', 'http://localhost:3010', 'http://127.0.0.1:3005', 'http://localhost:3005', 'http://127.0.0.1:3000'].includes(window.location.origin));
   }, []);
   const beginWallet = () => {
-    if (selectedWallet === 'embedded' && localWalletRedirect) { window.location.assign('http://localhost:3000/?wallet=create'); return; }
-    void (selectedWallet === 'embedded' ? connectEmbeddedWallet() : connectWallet());
+    setLocalNotice('');
+    if (selectedWallet === 'embedded') {
+      if (localWalletRedirect) {
+        window.location.assign('http://localhost:3000/?wallet=create');
+        return;
+      }
+      setLocalNotice('Embedded email wallet creation requires a self-hosted signing relayer (available in local dev preview). On this hosted deployment, please use "Connect existing wallet" (NEAR Connect) to connect with Meteor, HERE, MyNearWallet, or Nightly.');
+      setSelectedWallet('near_testnet');
+      return;
+    }
+    void connectWallet();
   };
 
   // SCREEN 1: A Quiet Welcome (Lens Style)
@@ -260,6 +270,34 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
         <div className="space-y-3">
           <button
             type="button"
+            aria-pressed={selectedWallet === 'near_testnet'}
+            onClick={() => { setSelectedWallet('near_testnet'); setLocalNotice(''); }}
+            className={`w-full text-left p-4 rounded-[16px] cursor-pointer transition-all ${
+              selectedWallet === 'near_testnet'
+                ? 'bg-[#E3EDDA] border-2 border-[#78A738] shadow-sm'
+                : 'bg-[#F2F5F0] border border-black/[0.04] hover:border-black/[0.1]'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-sm text-[#1A1B1E]">Connect existing wallet</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#78A738] text-white">
+                    Recommended · NEAR Connect
+                  </span>
+                </div>
+                <p className="text-xs text-[#5F6368] leading-relaxed">
+                  Connect any supported NEAR testnet wallet (Meteor, HERE, MyNearWallet, Nightly, HOT) and verify ownership with a signed message.
+                </p>
+              </div>
+              {selectedWallet === 'near_testnet' && (
+                <CheckCircle2 className="w-5 h-5 text-[#78A738] shrink-0 mt-0.5" />
+              )}
+            </div>
+          </button>
+
+          <button
+            type="button"
             aria-pressed={selectedWallet === 'embedded'}
             onClick={() => setSelectedWallet('embedded')}
             className={`w-full text-left p-4 rounded-[16px] cursor-pointer transition-all ${
@@ -272,43 +310,15 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
               <div className="space-y-0.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-sm text-[#1A1B1E]">Create new wallet</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-[#507222] border border-[#78A738]/30">
-                    Embedded
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-[#5F6368] border border-black/[0.08]">
+                    Embedded · Relayer Required
                   </span>
                 </div>
                 <p className="text-xs text-[#5F6368] leading-relaxed">
-                  Sign in with the email or social options offered by NEAR Auth. Create or restore your own testnet wallet without installing an extension.
+                  FastAuth MPC email onboarding (available in local developer preview with a self-hosted signing relayer).
                 </p>
               </div>
               {selectedWallet === 'embedded' && (
-                <CheckCircle2 className="w-5 h-5 text-[#78A738] shrink-0 mt-0.5" />
-              )}
-            </div>
-          </button>
-
-          <button
-            type="button"
-            aria-pressed={selectedWallet === 'near_testnet'}
-            onClick={() => setSelectedWallet('near_testnet')}
-            className={`w-full text-left p-4 rounded-[16px] cursor-pointer transition-all ${
-              selectedWallet === 'near_testnet'
-                ? 'bg-[#E3EDDA] border-2 border-[#78A738] shadow-sm'
-                : 'bg-[#F2F5F0] border border-black/[0.04] hover:border-black/[0.1]'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-0.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-sm text-[#1A1B1E]">Connect existing wallet</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-[#5F6368] border border-black/[0.08]">
-                    NEAR Connect
-                  </span>
-                </div>
-                <p className="text-xs text-[#5F6368] leading-relaxed">
-                  Select a supported NEAR testnet wallet and verify ownership with a signed message.
-                </p>
-              </div>
-              {selectedWallet === 'near_testnet' && (
                 <CheckCircle2 className="w-5 h-5 text-[#78A738] shrink-0 mt-0.5" />
               )}
             </div>
@@ -341,6 +351,13 @@ export const OnboardingWelcome: React.FC<OnboardingWelcomeProps> = ({ onComplete
             </span>
           </label>
         </div>
+
+        {localNotice && (
+          <div role="alert" className="p-3.5 rounded-[14px] bg-amber-50/90 border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-1">
+            <p className="font-semibold text-amber-950">Hosted Relayer Required</p>
+            <p>{localNotice}</p>
+          </div>
+        )}
 
         <button
           disabled={!termsAgreed || !riskAcknowledged || loading}

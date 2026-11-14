@@ -31,8 +31,8 @@ export async function chain(method: string, params: object | unknown[]) {
 export async function embeddedReady() {
   if (process.env.TINYE_EMBEDDED_SPONSOR_ENABLED !== "true") throw new EmbeddedUnavailable("Embedded wallet sponsorship is not configured on this server. Connect an existing wallet while the operator enables it.");
   const path = process.env.TINYE_NEAR_CLI_PATH || (process.env.LOCALAPPDATA ? join(process.env.LOCALAPPDATA, "Tinye", "near-cli", "node_modules", "near-cli-rs", "node_modules", ".bin_real", "near.exe") : "");
-  if (!path) throw new EmbeddedUnavailable("This server has no secure testnet signing service configured.");
-  try { await access(path); } catch { throw new EmbeddedUnavailable("The secure testnet signing service is unavailable on this server."); }
+  if (!path) throw new EmbeddedUnavailable("Embedded wallet sponsorship requires a self-hosted signing relayer. Please use NEAR Connect to connect an existing testnet wallet.");
+  try { await access(path); } catch { throw new EmbeddedUnavailable("Embedded wallet sponsorship requires a self-hosted signing relayer. Please use NEAR Connect to connect an existing testnet wallet."); }
   const network = await chain("status", []);
   if (network.chain_id !== "testnet") throw new Error("Only NEAR testnet is permitted.");
   return path;
