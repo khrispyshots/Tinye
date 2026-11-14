@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createRemoteJWKSet, jwtVerify, customFetch } from "jose";
 import { PublicKey } from "near-api-js";
-import { transactions, utils } from "near-api-legacy";
+import { transactions, utils, connect, keyStores, KeyPair } from "near-api-legacy";
 import { FastAuthSignature } from "@fast-auth-near/browser-sdk";
 import { encodeEmbeddedMessage, matchesEmbeddedPayload } from "@/services/embedded-payload";
 import { fetchEmbeddedJwks } from "@/server/embedded-jwks";
@@ -28,13 +28,36 @@ export async function chain(method: string, params: object | unknown[]) {
   if (!response.ok || data.error) throw new Error(data.error?.cause?.name || "Testnet RPC unavailable");
   return data.result;
 }
+let cachedSponsorAccount: any = null;
+export async function getSponsorAccount() {
+  const privateKey = process.env.TINYE_EMBEDDED_SPONSOR_PRIVATE_KEY;
+  if (!privateKey) return null;
+  const sponsor = process.env.TINYE_EMBEDDED_SPONSOR_ACCOUNT || "tinye.testnet";
+  if (cachedSponsorAccount && cachedSponsorAccount.accountId === sponsor) return cachedSponsorAccount;
+  const keyStore = new keyStores.InMemoryKeyStore();
+  const keyPair = KeyPair.fromString(privateKey as any);
+  await keyStore.setKey("testnet", sponsor, keyPair);
+  const near = await connect({
+    networkId: "testnet",
+    nodeUrl: rpcUrl,
+    keyStore,
+  });
+  cachedSponsorAccount = await near.account(sponsor);
+  return cachedSponsorAccount;
+}
+
 export async function embeddedReady() {
   if (process.env.TINYE_EMBEDDED_SPONSOR_ENABLED !== "true") throw new EmbeddedUnavailable("Embedded wallet sponsorship is not configured on this server. Connect an existing wallet while the operator enables it.");
+  const network = await chain("status", []);
+  if (network.chain_id !== "testnet") throw new Error("Only NEAR testnet is permitted.");
+
+  if (process.env.TINYE_EMBEDDED_SPONSOR_PRIVATE_KEY) {
+    return "native-signer";
+  }
+
   const path = process.env.TINYE_NEAR_CLI_PATH || (process.env.LOCALAPPDATA ? join(process.env.LOCALAPPDATA, "Tinye", "near-cli", "node_modules", "near-cli-rs", "node_modules", ".bin_real", "near.exe") : "");
   if (!path) throw new EmbeddedUnavailable("Embedded wallet sponsorship requires a self-hosted signing relayer. Please use NEAR Connect to connect an existing testnet wallet.");
   try { await access(path); } catch { throw new EmbeddedUnavailable("Embedded wallet sponsorship requires a self-hosted signing relayer. Please use NEAR Connect to connect an existing testnet wallet."); }
-  const network = await chain("status", []);
-  if (network.chain_id !== "testnet") throw new Error("Only NEAR testnet is permitted.");
   return path;
 }
 export function rateLimit(request: Request) {
@@ -110,6 +133,24 @@ async function sponsoredSignature(jwt: string, pending: Pending) {
   const day = new Date().toISOString().slice(0, 10);
   if (state.day !== day) { state.day = day; state.calls = 0; }
   if (++state.calls > 100) throw new EmbeddedUnavailable("The testnet sponsor daily request budget is exhausted.");
+
+  const sponsorAccount = await getSponsorAccount();
+  if (sponsorAccount) {
+    const outcome = await sponsorAccount.signAndSendTransaction({
+      receiverId: AUTH_CONTRACT,
+      actions: [
+        transactions.functionCall(
+          "sign",
+          Buffer.from(JSON.stringify({ guard_id: `jwt#${AUTH_ISSUER}`, verify_payload: jwt, sign_payload: pending.payload, algorithm: "eddsa" })),
+          300000000000000n,
+          1n
+        )
+      ]
+    });
+    if (typeof outcome.status?.SuccessValue !== "string" || !outcome.status.SuccessValue) throw new Error("NEAR Auth returned no signature.");
+    return FastAuthSignature.fromBase64(outcome.status.SuccessValue).recover("ed25519");
+  }
+
   const dir = await mkdtemp(join(tmpdir(), "tinye-approval-"));
   try {
     const path = join(dir, "approval.json");
@@ -127,8 +168,17 @@ async function ensureAccount(accountId: string, publicKey: string) {
     const sponsor = process.env.TINYE_EMBEDDED_SPONSOR_ACCOUNT || "tinye.testnet";
     const balance = await chain("query", { request_type: "view_account", account_id: sponsor, finality: "final" });
     if (BigInt(balance.amount) < 2n * 10n ** 24n) throw new EmbeddedUnavailable("The testnet wallet sponsor needs funding before creating more wallets.");
-    const output = await runCli(["tokens", sponsor, "send-near", accountId, "0.1 NEAR", "network-config", "testnet", "sign-with-keychain", "send"]);
-    await extractOutcome(output, sponsor, accountId);
+
+    const sponsorAccount = await getSponsorAccount();
+    if (sponsorAccount) {
+      await sponsorAccount.signAndSendTransaction({
+        receiverId: accountId,
+        actions: [transactions.transfer(100000000000000000000000n)]
+      });
+    } else {
+      const output = await runCli(["tokens", sponsor, "send-near", accountId, "0.1 NEAR", "network-config", "testnet", "sign-with-keychain", "send"]);
+      await extractOutcome(output, sponsor, accountId);
+    }
   }
   const access = await chain("query", { request_type: "view_access_key", account_id: accountId, public_key: publicKey, finality: "final" });
   if (access.permission !== "FullAccess") throw new Error("The created account could not authorise transactions.");
