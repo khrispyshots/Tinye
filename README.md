@@ -1,7 +1,7 @@
 # Tinye — Purpose-Locked NEAR Savings Vaults
 
 > **Built for the NEAR HACKATHON** · Track: Consumer Apps & Financial Infrastructure  
-> 100% Non-Custodial · On-Chain State as Source of Truth · Lens Protocol Minimalist Aesthetic
+> 100% Non-Custodial · On-Chain State as Source of Truth · Minimalist Design System
 
 Tinye is a non-custodial, purpose-locked savings application built directly on NEAR Protocol (Testnet). Users create dedicated smart contract vaults for specific personal goals, deposit native NEAR tokens into verifiable on-chain ledgers, and withdraw their funds according to strict contract rules without third-party custody, punitive lockups, or fabricated balances.
 
@@ -31,7 +31,7 @@ The current implementation is fully deployed and verified on NEAR Testnet:
 - **NEP-413 Ownership Verification:** Cryptographic sign-in using off-chain message signatures (`signMessage`) verifying account ownership against random anti-replay single-use server challenges.
 - **HttpOnly Secure Sessions:** Zero plain-text key storage in the browser; session verification operates with strict same-origin controls.
 
-### 3. Lens Protocol Visual Architecture
+### 3. Design System & Frontend Architecture
 - **Canvas & Surface:** Light, calm `#FAFAFA` background with ambient atmospheric glows (`#EBF2E6`, `#F2F4EB`, `#E5ECE0`).
 - **Cards & Typography:** Clean `#FFFFFF` cards with subtle borders (`rgba(0,0,0,0.06)`), Inter typography (400 to 800 weight), and signature meadow (`#78A738`) and sage (`#E3EDDA`) accents.
 - **Onboarding Flow:** 3-stage quiet onboarding sequence with clear disclaimers that testnet assets carry zero monetary value.
@@ -87,7 +87,7 @@ Follow these numbered deterministic steps to test the application:
 
 ### 1. Launch the Application
 - **Do:** Run `npm run start -- -p 3005 -H 127.0.0.1` and open `http://127.0.0.1:3005` in your browser.
-- **See:** The Lens Protocol UI loads cleanly with `#FAFAFA` neutral background, Inter typography, and zero simulated/fake balances.
+- **See:** The application loads cleanly with `#FAFAFA` neutral background, Inter typography, and zero simulated/fake balances.
 
 ### 2. Connect a NEAR Testnet Wallet
 - **Do:** Navigate through the onboarding to the Wallet Setup screen. Select "NEAR Testnet Connect" and approve the connection in your wallet (e.g. Meteor, HERE, or Nightly).
